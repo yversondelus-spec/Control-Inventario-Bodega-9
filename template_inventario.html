@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AEROSAN — Inventario Bodega</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=JetBrains+Mono:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0C1220;--bg2:#111827;--bg3:#1A2336;--card:#141E2F;
+  --border:#1E2D45;--border2:#263650;
+  --blue:#0EA5E9;--blue2:#38BDF8;--blue3:#BAE6FD;
+  --red:#EF4444;--amber:#F59E0B;--green:#10B981;--purple:#8B5CF6;--orange:#F97316;
+  --text:#F1F5F9;--text2:#94A3B8;--text3:#475569;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;min-height:100vh;}
+
+/* ── HEADER ── */
+.header{
+  background:linear-gradient(135deg,#0A1628 0%,#0D1F3C 50%,#081221 100%);
+  border-bottom:1px solid var(--border2);
+  padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+}
+.logo{display:flex;align-items:center;gap:14px;}
+.logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--blue),#0056B3);
+  border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px;color:#fff;
+  box-shadow:0 0 20px rgba(14,165,233,.4);}
+.logo-name{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;letter-spacing:3px;color:#fff;}
+.logo-sub{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);}
+.header-right{display:flex;align-items:center;gap:16px;}
+.badge-date{
+  background:rgba(14,165,233,.12);border:1px solid rgba(14,165,233,.3);
+  border-radius:20px;padding:5px 14px;
+  font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--blue2);
+  display:flex;align-items:center;gap:6px;
+}
+.badge-time{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--blue);animation:blink 1.5s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* ── MAIN ── */
+.main{padding:28px 32px;max-width:1500px;margin:0 auto;}
+.section-title{
+  font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;
+  letter-spacing:2.5px;text-transform:uppercase;color:var(--text2);
+  margin-bottom:16px;display:flex;align-items:center;gap:10px;
+}
+.section-title::before{content:'';display:block;width:3px;height:16px;background:var(--blue);border-radius:2px;}
+
+/* ── KPIs ── */
+.kpi-row{display:grid;grid-template-columns:repeat(8,1fr);gap:10px;margin-bottom:28px;}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;
+  position:relative;overflow:hidden;animation:fadeup .4s ease both;}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0;}
+.kpi.k-blue::after{background:linear-gradient(90deg,var(--blue),var(--blue2));}
+.kpi.k-red::after{background:var(--red);}
+.kpi.k-amber::after{background:var(--amber);}
+.kpi.k-green::after{background:var(--green);}
+.kpi.k-purple::after{background:var(--purple);}
+.kpi.k-orange::after{background:var(--orange);}
+.kpi.k-teal::after{background:#06B6D4;}
+.kpi.k-rose::after{background:#FB7185;}
+@keyframes fadeup{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.kpi-label{font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:8px;}
+.kpi-val{font-family:'Rajdhani',sans-serif;font-size:30px;font-weight:700;line-height:1;color:var(--text);}
+.kpi-sub{font-size:10px;color:var(--text3);margin-top:4px;}
+.kpi.k-red .kpi-val{color:var(--red);}
+.kpi.k-amber .kpi-val{color:var(--amber);}
+.kpi.k-green .kpi-val{color:var(--green);}
+
+/* ── GRIDS ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
+.grid-32{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px;}
+.grid-23{display:grid;grid-template-columns:1fr 2fr;gap:16px;margin-bottom:16px;}
+
+/* ── CARD ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 22px;animation:fadeup .5s ease both;}
+.card-title{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;color:var(--text2);margin-bottom:16px;
+  display:flex;align-items:center;justify-content:space-between;}
+.card-badge{font-size:9px;padding:3px 8px;border-radius:6px;background:rgba(14,165,233,.12);
+  color:var(--blue2);font-family:'JetBrains Mono',monospace;}
+.chart-wrap canvas{max-height:260px;}
+.chart-wrap.tall canvas{max-height:320px;}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:20px;}
+.tab{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--text2);padding:10px 20px;
+  border-bottom:2px solid transparent;cursor:pointer;margin-bottom:-1px;transition:color .2s,border-color .2s;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--blue2);border-bottom-color:var(--blue);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* ── LEGEND ── */
+.legend-pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.pill{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2);}
+.pill-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+
+@media(max-width:1100px){.kpi-row{grid-template-columns:repeat(4,1fr);}.grid-3{grid-template-columns:1fr 1fr;}.grid-32,.grid-23{grid-template-columns:1fr;}}
+@media(max-width:700px){.kpi-row{grid-template-columns:repeat(2,1fr);}.grid-2,.grid-3,.grid-32,.grid-23{grid-template-columns:1fr;}.main{padding:16px;}}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">
+    <div class="logo-icon">AS</div>
+    <div>
+      <div class="logo-name">AEROSAN</div>
+      <div class="logo-sub">Airport Services · Inventario Bodega</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="badge-date"><div class="dot"></div>Inv. al {{FECHA}}</div>
+    <div class="badge-time">{{HORA}}</div>
+  </div>
+</header>
+
+<div class="main">
+
+  <div class="section-title">Resumen General</div>
+  <div class="kpi-row">
+    <div class="kpi k-blue"   style="animation-delay:.04s"><div class="kpi-label">Total registros</div><div class="kpi-val">{{TOTAL}}</div><div class="kpi-sub">items en inventario</div></div>
+    <div class="kpi k-teal"   style="animation-delay:.07s"><div class="kpi-label">Total kilos</div><div class="kpi-val">{{KGS_TOT}}</div><div class="kpi-sub">kilogramos</div></div>
+    <div class="kpi k-blue"   style="animation-delay:.10s"><div class="kpi-label">Piezas totales</div><div class="kpi-val">{{PZS_TOT}}</div><div class="kpi-sub">unidades</div></div>
+    <div class="kpi k-green"  style="animation-delay:.13s"><div class="kpi-label">Estado OK</div><div class="kpi-val">{{OK_PCT}}</div><div class="kpi-sub">{{OK_CNT}} items OK</div></div>
+    <div class="kpi k-red"    style="animation-delay:.16s"><div class="kpi-label">Desviación</div><div class="kpi-val">{{DESV_CNT}}</div><div class="kpi-sub">{{DESV_PCT}} del total</div></div>
+    <div class="kpi k-amber"  style="animation-delay:.19s"><div class="kpi-label">Abandono</div><div class="kpi-val">{{ABAN_CNT}}</div><div class="kpi-sub">{{ABAN_PCT}} del total</div></div>
+    <div class="kpi k-orange" style="animation-delay:.22s"><div class="kpi-label">Prom. días</div><div class="kpi-val">{{AVG_DIAS}}</div><div class="kpi-sub">días en bodega</div></div>
+    <div class="kpi k-rose"   style="animation-delay:.25s"><div class="kpi-label">Máx. días</div><div class="kpi-val">{{MAX_DIAS}}</div><div class="kpi-sub">días máximo</div></div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('estado')">📦 Estado &amp; Origen</div>
+    <div class="tab" onclick="switchTab('tiempo')">⏱ Tiempo &amp; Destinos</div>
+    <div class="tab" onclick="switchTab('logistica')">🚚 Logística &amp; Ubicación</div>
+  </div>
+
+  <!-- TAB 1 -->
+  <div class="tab-panel active" id="panel-estado">
+    <div class="grid-23">
+      <div class="card">
+        <div class="card-title">Estado del inventario <span class="card-badge" id="badgeTotal">—</span></div>
+        <div class="chart-wrap"><canvas id="chartEstado"></canvas></div>
+        <div class="legend-pills" id="legendEstado"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Piezas por Origen × Estado <span class="card-badge">Top 6 orígenes</span></div>
+        <div class="chart-wrap tall"><canvas id="chartCross"></canvas></div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Registros por tipo de Origen</div>
+        <div class="chart-wrap tall"><canvas id="chartOrigen"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Kilos totales por Origen</div>
+        <div class="chart-wrap tall"><canvas id="chartKiloOrig"></canvas></div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Kilos por Estado</div>
+        <div class="chart-wrap"><canvas id="chartKiloEst"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Tipo de Equipo / Contenedor</div>
+        <div class="chart-wrap"><canvas id="chartEquipo"></canvas></div>
+        <div class="legend-pills" id="legendEquipo"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2 -->
+  <div class="tab-panel" id="panel-tiempo">
+    <div class="grid-32">
+      <div class="card">
+        <div class="card-title">Distribución de días en bodega</div>
+        <div class="chart-wrap tall"><canvas id="chartDiasHist"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Tipo de Entrega</div>
+        <div class="chart-wrap"><canvas id="chartEntr"></canvas></div>
+        <div class="legend-pills" id="legendEntr"></div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Top 15 Destinos por cantidad</div>
+        <div class="chart-wrap tall"><canvas id="chartDest"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Días promedio por destino <span class="card-badge">Top 15 mayor antigüedad</span></div>
+        <div class="chart-wrap tall"><canvas id="chartDiasDest"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3 -->
+  <div class="tab-panel" id="panel-logistica">
+    <div class="grid-23">
+      <div class="card">
+        <div class="card-title">Ubicación actual en bodega</div>
+        <div class="chart-wrap tall"><canvas id="chartUbic"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Desglose por Estado</div>
+        <div id="tablEstado" style="margin-top:4px;"></div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Análisis rápido — Resumen crítico</div>
+        <div id="resumenCritico"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Distribución proporcional</div>
+        <div class="chart-wrap"><canvas id="chartEstadoPie"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const D = {{INV_DATA}};
+const RESUMEN_ITEMS = {{RESUMEN_ITEMS}};
+
+const C = {
+  estado: ["#EF4444","#F59E0B","#10B981","#8B5CF6","#F97316","#06B6D4","#EC4899","#A8A29E","#64748B"],
+  blue:   ["#0EA5E9","#38BDF8","#7DD3FC","#BAE6FD","#0369A1","#0284C7","#0891B2","#0E7490","#164E63","#083344","#0C4A6E","#172554"],
+  cross:  ["#EF4444","#F59E0B","#10B981","#8B5CF6","#F97316"],
+  hist:   ["#10B981","#22D3EE","#60A5FA","#A78BFA","#F97316","#F59E0B","#EF4444","#DC2626"],
+  dest:   ["#0EA5E9","#38BDF8","#7DD3FC","#0369A1","#0284C7","#0891B2","#0E7490","#164E63","#083344","#BAE6FD","#0C4A6E","#172554","#1E3A5F","#0A2540","#06182E"],
+};
+
+const gc = '#1A2A40', tc = '#475569';
+const tip = {backgroundColor:'#1E2D45',borderColor:'#263650',borderWidth:1,titleColor:'#F1F5F9',bodyColor:'#94A3B8',padding:10};
+const base = {responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false},tooltip:{...tip,callbacks:{label:ctx=>` ${Number(ctx.raw).toLocaleString('es-CL')}`}}},animation:{duration:800,easing:'easeOutQuart'}};
+
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelector(`.tab[onclick="switchTab('${t}')"]`).classList.add('active');
+  document.getElementById(`panel-${t}`).classList.add('active');
+  if(t==='tiempo'    && !window._t2){buildTiempo();    window._t2=true;}
+  if(t==='logistica' && !window._t3){buildLogistica(); window._t3=true;}
+}
+
+function pills(id, labels, colors){
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.innerHTML=labels.map((l,i)=>`<div class="pill"><div class="pill-dot" style="background:${colors[i%colors.length]}"></div>${l}</div>`).join('');
+}
+
+// ── TAB 1 ──────────────────────────────────────────────────────────────────
+function buildEstado(){
+  const total = D.kpis.total;
+  document.getElementById('badgeTotal').textContent = `${total.toLocaleString('es-CL')} items`;
+
+  // Donut estado
+  new Chart(document.getElementById('chartEstado'),{
+    type:'doughnut',
+    data:{labels:D.estado.labels,datasets:[{data:D.estado.data,backgroundColor:C.estado,borderColor:'#141E2F',borderWidth:3,hoverOffset:10}]},
+    options:{...base,cutout:'60%',plugins:{...base.plugins,tooltip:{...tip,callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw} (${(ctx.raw/total*100).toFixed(1)}%)`}}}}
+  });
+  pills('legendEstado', D.estado.labels, C.estado);
+
+  // Cross stacked
+  const origs  = Object.keys(D.cross);
+  const estats = D.top_est;
+  new Chart(document.getElementById('chartCross'),{
+    type:'bar',
+    data:{
+      labels: origs.map(o=>o.length>18?o.slice(0,17)+'…':o),
+      datasets: estats.map((e,i)=>({label:e,stack:'s',data:origs.map(o=>D.cross[o]?D.cross[o][e]||0:0),backgroundColor:C.cross[i],borderRadius:i===estats.length-1?{topLeft:4,topRight:4}:0}))
+    },
+    options:{...base,plugins:{...base.plugins,legend:{display:true,position:'top',labels:{color:tc,font:{size:10},padding:10,boxWidth:10,usePointStyle:true}}},
+      scales:{x:{stacked:true,ticks:{color:tc,font:{size:9}},grid:{color:gc}},y:{stacked:true,ticks:{color:tc},grid:{color:gc}}}}
+  });
+
+  // Origen bar
+  new Chart(document.getElementById('chartOrigen'),{type:'bar',
+    data:{labels:D.origen.labels,datasets:[{data:D.origen.data,backgroundColor:C.blue,borderRadius:4}]},
+    options:{...base,indexAxis:'y',scales:{x:{ticks:{color:tc},grid:{color:gc}},y:{ticks:{color:tc,font:{size:10}},grid:{color:gc}}}}
+  });
+
+  // Kilo origen
+  new Chart(document.getElementById('chartKiloOrig'),{type:'bar',
+    data:{labels:D.kilo_orig.labels,datasets:[{data:D.kilo_orig.data,backgroundColor:C.blue.slice(1),borderRadius:4}]},
+    options:{...base,indexAxis:'y',plugins:{...base.plugins,tooltip:{...tip,callbacks:{label:ctx=>`${(ctx.raw/1000).toFixed(1)} t`}}},
+      scales:{x:{ticks:{color:tc,callback:v=>`${(v/1000).toFixed(0)}t`},grid:{color:gc}},y:{ticks:{color:tc,font:{size:10}},grid:{color:gc}}}}
+  });
+
+  // Kilo estado
+  new Chart(document.getElementById('chartKiloEst'),{type:'bar',
+    data:{labels:D.kilo_est.labels,datasets:[{data:D.kilo_est.data,backgroundColor:C.estado,borderRadius:{topLeft:5,topRight:5}}]},
+    options:{...base,plugins:{...base.plugins,tooltip:{...tip,callbacks:{label:ctx=>`${(ctx.raw/1000).toFixed(1)} t`}}},
+      scales:{x:{ticks:{color:tc,font:{size:9}},grid:{color:gc}},y:{ticks:{color:tc,callback:v=>`${(v/1000).toFixed(0)}t`},grid:{color:gc}}}}
+  });
+
+  // Equipo donut
+  const eqLab=D.equipo.labels.slice(0,8), eqDat=D.equipo.data.slice(0,8);
+  new Chart(document.getElementById('chartEquipo'),{type:'doughnut',
+    data:{labels:eqLab,datasets:[{data:eqDat,backgroundColor:C.blue,borderColor:'#141E2F',borderWidth:3,hoverOffset:8}]},
+    options:{...base,cutout:'55%',plugins:{...base.plugins,tooltip:{...tip,callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw}`}}}}
+  });
+  pills('legendEquipo', eqLab, C.blue);
+}
+
+// ── TAB 2 ──────────────────────────────────────────────────────────────────
+function buildTiempo(){
+  new Chart(document.getElementById('chartDiasHist'),{type:'bar',
+    data:{labels:D.dias_hist.labels,datasets:[{data:D.dias_hist.data,backgroundColor:C.hist,borderRadius:{topLeft:5,topRight:5}}]},
+    options:{...base,plugins:{...base.plugins,tooltip:{...tip,callbacks:{title:ctx=>`Rango: ${ctx[0].label}`,label:ctx=>`${ctx.raw} items`}}},
+      scales:{x:{ticks:{color:tc},grid:{color:gc}},y:{ticks:{color:tc},grid:{color:gc},title:{display:true,text:'Cantidad de items',color:tc,font:{size:9}}}}}
+  });
+
+  const eColors=['#0EA5E9','#10B981','#F59E0B','#8B5CF6','#EF4444'];
+  const eLabels={OTR:'Otro',TRA:'Transferencia',TIE:'Tiedown',COM:'Comercial',REI:'Reimportación'};
+  new Chart(document.getElementById('chartEntr'),{type:'doughnut',
+    data:{labels:D.entr.labels.map(l=>eLabels[l]||l),datasets:[{data:D.entr.data,backgroundColor:eColors,borderColor:'#141E2F',borderWidth:3,hoverOffset:8}]},
+    options:{...base,cutout:'58%',plugins:{...base.plugins,tooltip:{...tip,callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw} (${(ctx.raw/D.kpis.total*100).toFixed(1)}%)`}}}}
+  });
+  pills('legendEntr', D.entr.labels.map(l=>eLabels[l]||l), eColors);
+
+  new Chart(document.getElementById('chartDest'),{type:'bar',
+    data:{labels:D.dest.labels,datasets:[{data:D.dest.data,backgroundColor:C.dest,borderRadius:{topLeft:5,topRight:5}}]},
+    options:{...base,scales:{x:{ticks:{color:tc,font:{size:10}},grid:{color:gc}},y:{ticks:{color:tc},grid:{color:gc}}}}
+  });
+
+  const ddC=D.dias_dest.data.map(v=>v>=500?'#EF4444':v>=300?'#F59E0B':v>=150?'#F97316':'#38BDF8');
+  new Chart(document.getElementById('chartDiasDest'),{type:'bar',
+    data:{labels:D.dias_dest.labels,datasets:[{data:D.dias_dest.data,backgroundColor:ddC,borderRadius:4}]},
+    options:{...base,indexAxis:'y',plugins:{...base.plugins,tooltip:{...tip,callbacks:{label:ctx=>`${ctx.raw} días prom.`}}},
+      scales:{x:{ticks:{color:tc},grid:{color:gc},title:{display:true,text:'Días promedio',color:tc,font:{size:9}}},y:{ticks:{color:tc,font:{size:10}},grid:{color:gc}}}}
+  });
+}
+
+// ── TAB 3 ──────────────────────────────────────────────────────────────────
+function buildLogistica(){
+  const total = D.kpis.total;
+  const ubicC=['#0EA5E9','#38BDF8','#06B6D4','#0891B2','#22D3EE','#7DD3FC','#BAE6FD','#0369A1','#0284C7','#0E7490','#164E63','#083344'];
+  new Chart(document.getElementById('chartUbic'),{type:'bar',
+    data:{labels:D.ubic.labels,datasets:[{data:D.ubic.data,backgroundColor:ubicC,borderRadius:{topLeft:5,topRight:5}}]},
+    options:{...base,scales:{x:{ticks:{color:tc,font:{size:10}},grid:{color:gc}},y:{ticks:{color:tc},grid:{color:gc}}}}
+  });
+
+  // Tabla estado
+  document.getElementById('tablEstado').innerHTML=D.estado.labels.map((l,i)=>{
+    const pct=(D.estado.data[i]/total*100).toFixed(1);
+    const bw=Math.max(4,D.estado.data[i]/total*100);
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <div style="width:92px;font-size:11px;color:#94A3B8;font-family:'JetBrains Mono',monospace;">${l}</div>
+      <div style="flex:1;height:22px;background:#1A2336;border-radius:4px;overflow:hidden;">
+        <div style="width:${bw}%;height:100%;background:${C.estado[i]};border-radius:4px;display:flex;align-items:center;padding-left:6px;">
+          <span style="font-size:10px;color:#fff;font-weight:700;white-space:nowrap;">${D.estado.data[i]}</span>
+        </div>
+      </div>
+      <div style="width:38px;text-align:right;font-size:11px;color:#64748B;font-family:'JetBrains Mono',monospace;">${pct}%</div>
+    </div>`;
+  }).join('');
+
+  // Resumen crítico dinámico
+  document.getElementById('resumenCritico').innerHTML=`<div style="display:grid;gap:10px;margin-top:4px;">${
+    RESUMEN_ITEMS.map(r=>`<div style="display:flex;align-items:center;gap:12px;padding:12px;background:#0C1220;border:1px solid #1A2A40;border-radius:10px;border-left:3px solid ${r.c}">
+      <div style="font-size:20px;">${r.icon}</div>
+      <div style="flex:1;">
+        <div style="font-size:10px;color:#64748B;text-transform:uppercase;letter-spacing:1px;">${r.label}</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:${r.c};line-height:1.2;">${r.val}</div>
+        <div style="font-size:10px;color:#475569;">${r.sub}</div>
+      </div></div>`).join('')
+  }</div>`;
+
+  // Pie
+  new Chart(document.getElementById('chartEstadoPie'),{type:'pie',
+    data:{labels:D.estado.labels,datasets:[{data:D.estado.data,backgroundColor:C.estado,borderColor:'#141E2F',borderWidth:2,hoverOffset:8}]},
+    options:{...base,plugins:{...base.plugins,
+      legend:{display:true,position:'right',labels:{color:tc,font:{size:10},padding:10,boxWidth:10,usePointStyle:true}},
+      tooltip:{...tip,callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw} (${(ctx.raw/total*100).toFixed(1)}%)`}}}}
+  });
+}
+
+window.addEventListener('load', buildEstado);
+</script>
+</body>
+</html>
